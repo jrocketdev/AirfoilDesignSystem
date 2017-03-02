@@ -3,10 +3,12 @@
 </head>
 
 <body>
-  <h1>Welcome to Meteor!</h1>
+    <h1>Welcome to Meteor!</h1>
 
-  {{> hello}}
-  {{> info}}
+    {{> hello}}
+    {{> info}}
+    {{> airfoil_section_svg}}
+    {{> zoom_test}}
 </body>
 
 <template name="hello">
@@ -22,4 +24,20 @@
     <li><a href="https://docs.meteor.com" target="_blank">Read the Docs</a></li>
     <li><a href="https://forums.meteor.com" target="_blank">Discussions</a></li>
   </ul>
+</template>
+
+<template name="airfoil_section_svg">
+    <p>Hi There!</p>
+    <svg id="airfoil_section">
+        <!--<rect class="background_rect" width="200" height="200" fill="blue"></rect>-->
+        <!--<circle r="10" cx="200" cy="200"></circle>-->
+    </svg>
+</template>
+
+<template name="zoom_test">
+    <div>
+    <svg id="zoom_test">
+
+    </svg>
+    </div>
 </template>

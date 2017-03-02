@@ -2,9 +2,8 @@
  *  A javascript Pritchard Airfoil library
  *
  *  Created by Jonathan on 2/25/2017.
- */
+ *
 
-/*
 Input Variables for Pritchard Airfoil:
     r:          Radius
     cx:         Axial Chord
@@ -27,6 +26,7 @@ Extra Variable Calculations (as methods):
     lift():     Lift Coefficient
 
 Useful Methods:
+    toString():     Returns a string with independent and dependant variables of the foil.
 
  */
 
