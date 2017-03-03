@@ -28,6 +28,45 @@ Template.hello.events({
 
 Template.airfoil_section_svg.rendered = function sectionOnCreated() {
 
+    var lut = [
+        [1]
+    ];
+
+    var binomial = function(n) {
+        var s, nextRow, prev;
+        while (n >= lut.length){
+            nextRow = [];
+            nextRow.push(1);
+            prev = lut.length-1;
+            for (i=1; i <= prev; i++){
+                nextRow.push(lut[prev][i-1] + lut[prev][i]);
+            }
+            nextRow.push(1);
+            lut.push(nextRow);
+        }
+        return lut[n];
+    };
+
+    console.log(binomial(6));
+    console.log(lut);
+
+    var var_func = function(ws, t){
+        var x_val = 0;
+        var n = ws.length;
+        var bin = binomial(n);
+        for (i=0; i < n; i++){
+            // if (t == 0){
+            //     console.log(ws[i])
+            //     console.log(bin[i])
+            //     console.log(Math.pow(1-t,n-i))
+            //     console.log(Math.pow(t,i))
+            //     console.log('sum=' + ws[i]*bin[i]*Math.pow(1-t,n-i)*Math.pow(t,i))
+            // }
+            x_val += ws[i]*bin[i]*Math.pow(1-t,n-i)*Math.pow(t,i);
+        }
+        return x_val;
+    };
+
     var width = 800;
     var height = 600;
     var point_radius = 10
@@ -60,28 +99,60 @@ Template.airfoil_section_svg.rendered = function sectionOnCreated() {
 
             x_constraints = [-current_translate[0]/current_scale, (width-current_translate[0])/current_scale]
             y_constraints = [-current_translate[1]/current_scale, (height-current_translate[1])/current_scale]
-
-            // console.log('zoom.')
-            // console.log(current_translate);
-            // console.log(current_scale);
-            // console.log(x_constraints);
-            // console.log(y_constraints);
     }));
 
-    // svg.selectAll('rect.background_rect')
-    //     .attr('width', width)
-    //     .attr('height', height);
-
-
     // svg.selectAll('circle').attr('fill','red');
+    var num_points = 50;
+    var ts = []
+    for (i=0; i<num_points; i++){
+        ts.push(i*(1.0/(num_points-1)));
+    }
+
+    var line = d3.svg.line()
+        .interpolate('linear')
+        .x(function(d) {
+                var ws = [];
+                for (i = 0; i < points.length; i++) {
+                    ws.push(points[i].x);
+                }
+                return var_func(ws, d);
+            })
+        .y(function(d) {
+            var ws = [];
+            for (i = 0; i < points.length; i++) {
+                ws.push(points[i].y);
+            }
+            return var_func(ws, d);
+        });
+
+    // line = d3.svg.line()
+    //     .x(function(d){return d.x})
+    //     .y(function(d){return d.y})
+    //     .interpolate('linear');
+
+    zoom_group.selectAll('path.line')
+        .data([ts])
+        .enter()
+        .append('path')
+        .attr('class','line')
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 2)
+        .attr("fill", "none");
+
+    // svg.selectAll('path.line')
+    //     .data([points])
+    //     .attr('d', function(d){
+    //         return line(d);
+    //     });
 
     drag_point = d3.behavior.drag()
         .on('dragstart', function(d) {
             this.parentNode.appendChild(this);
         })
-        .on('drag', function(d) {
+        .on('drag', function(d, i) {
             var e, x, y;
-
+            // console.log(i);
             e = d3.event
             x = d.x + e.dx;
             y = d.y + e.dy;
@@ -94,7 +165,14 @@ Template.airfoil_section_svg.rendered = function sectionOnCreated() {
                 cx = x, cy=y;
                 d.x = x;
                 d.y = y;
+                points[i].x = x;
+                points[i].y = y;
                 d3.select(this).attr({cx: cx, cy: cy});
+
+                zoom_group.selectAll('path.line')
+                    .data([ts])
+                    .attr('class','line')
+                    .attr('d', function(d) {return line(d)});
             }
         })
 
