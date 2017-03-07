@@ -7,8 +7,7 @@
 
     {{> hello}}
     {{> info}}
-    {{> airfoil_section_svg}}
-    {{> zoom_test}}
+    {{> airfoil_sec_svg}}
 </body>
 
 <template name="hello">
@@ -26,18 +25,9 @@
   </ul>
 </template>
 
-<template name="airfoil_section_svg">
-    <p>Hi There!</p>
+<template name="airfoil_sec_svg">
+    Cx: <input id='cx_input' type="number" name="cx_input" step="0.001"><br>
     <svg id="airfoil_section">
-        <!--<rect class="background_rect" width="200" height="200" fill="blue"></rect>-->
-        <!--<circle r="10" cx="200" cy="200"></circle>-->
-    </svg>
-</template>
-
-<template name="zoom_test">
-    <div>
-    <svg id="zoom_test">
 
     </svg>
-    </div>
 </template>
