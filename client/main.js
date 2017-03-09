@@ -3,69 +3,157 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import { PritchardAirfoil, default_pritchard_params } from './pritchard_airfoil';
 import './main.html';
 
-var p_airfoil = new PritchardAirfoil(default_pritchard_params);
+// Set up global variables to keep track of.
 // var points = [{x: 10, y: 50}, {x: 10, y: 10}, {x: 100, y: 10}, {x: 180, y: 190}, {x: 50, y: 50}];
+var AIRFOIL_KEY = 'airfoil';
+var p_airfoil = new PritchardAirfoil(default_pritchard_params);
 
-Template.hello.onCreated(function helloOnCreated() {
-    // counter starts at 0
-    this.counter = new ReactiveVar(0);
-});
+// SVG Information & Variables
+var svg_width = 0;
+var svg_height = 0;
+var svg_ratio = 0.75;
+var svg;
+var x_scale;
+var y_scale;
+var line;
 
-Template.hello.helpers({
-    counter() {
-        return Template.instance().counter.get();
-    },
-});
+Meteor.startup(function(){
 
-Template.hello.events({
-    'click button'(event, instance) {
-        // increment the counter when button is clicked
-        instance.counter.set(instance.counter.get() + 1);
-        console.log(p_airfoil.toString());
-    },
+    $(window).resize(function(evt) {
+        console.log('Need to fix resizing for svg.')
+        if (svg_width != $('#airfoil_section')[0].getBoundingClientRect().width){
+            console.log('Resizing...');
+            svg_width = $('#airfoil_section')[0].getBoundingClientRect().width;
+            svg.attr('height', svg_width*0.8);
+        }
+    });
 });
 
 Template.airfoil_sec_svg.events({
-    // 'change #cx_input'(event, instance){
-    //     console.log(event.target.value);
-    //     p_airfoil.cx = event.target.value;
-    //     p_airfoil.calc_airfoil();
-    //     console.log(p_airfoil.cx);
-    // }
+    'change #r_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.r = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #cx_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.cx = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #ct_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.ct = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #uct_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.uct = Number(event.target.value)*Math.PI/180.0;
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #b1_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.b1 = Number(event.target.value)*Math.PI/180.0;
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #db1_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.db1 = Number(event.target.value)*Math.PI/180.0;
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #rle_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.rle = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #b2_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.b2 = Number(event.target.value)*Math.PI/180.0;
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #rte_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.rte = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #nb_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.nb = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    },
+    'change #o_input'(event, instance){
+        console.log(event.target.value);
+
+        p_airfoil.o = Number(event.target.value);
+        p_airfoil.calc_airfoil();
+
+        redraw_airfoil();
+    }
 });
 
 Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
 
-    $('#cx_input').val(p_airfoil.cx);
+    // Populate the airfoil parameters in the sidebar list.
+    populate_airfoil_params();
 
-    var width = 500;
-    var height = 500;
-    var point_radius = 0.1;
-    var dragging = false;
+    // Set the SVG width and height variables
+    svg_width = $('#airfoil_section')[0].getBoundingClientRect().width;
+    svg_height = svg_width*svg_ratio;
+    console.log(svg_width, svg_height);
 
     // Variables to keep track of the current scale factor and translation when zooming/panning.
     var current_scale = 1.0;
     var current_translate = [0, 0];
     // Variables to keep track of current x & y viewable areas
     // We'll use the scale and translate above later to manipulate these to know exactly what is showing.
-    var x_constraints = [0, width];
-    var y_constraints = [0, height];
+    var x_constraints = [0, svg_width];
+    var y_constraints = [0, svg_height];
 
     // Set up the SVG area with width and height
-    var svg = d3.select('#airfoil_section');
-    svg.attr('width', width);
-    svg.attr('height', height);
+    svg = d3.select('#airfoil_section');
+    svg.attr('width', svg_width);
+    svg.attr('height', svg_height);
 
     // Set up background SVG
     var bg_rect = svg.append('rect')
-        .attr('width', width)
-        .attr('height', height)
-        .attr('fill', 'gray')
+        .attr('width', svg_width)
+        .attr('height', svg_height)
+        .attr('fill', 'silver')
+        .attr('class', 'background');
 
     // Append a group to the SVG
     // This group will be used to zoom in/out
     var zoom_group = svg.append('g')
-        .attr('id', 'zoom_group');
+        .attr('class', 'zoom_group');
 
     // Set up zoom behavior.
     // Listen for the zoom event on the background, then apply it to the zoom_group (all airfoil info)
@@ -73,23 +161,24 @@ Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
         current_translate = d3.event.translate;
         current_scale = d3.event.scale;
 
-        zoom_group.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
 
-        x_constraints = [-current_translate[0]/current_scale, (width-current_translate[0])/current_scale]
-        y_constraints = [-current_translate[1]/current_scale, (height-current_translate[1])/current_scale]
+        zoom_group.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+        // bg_rect.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+
+        x_constraints = [-current_translate[0]/current_scale, (svg_width-current_translate[0])/current_scale]
+        y_constraints = [-current_translate[1]/current_scale, (svg_height-current_translate[1])/current_scale]
     }));
 
     // Create X and Y scales
-    var svg_ratio = width/height;
-    var x_scale = d3.scale.linear()
+    x_scale = d3.scale.linear()
         .domain(p_airfoil.get_extents())
-        .range([0, width]);
-    var y_scale = d3.scale.linear()
+        .range([0, svg_width*svg_ratio]);
+    y_scale = d3.scale.linear()
         .domain(p_airfoil.get_extents())
-        .range([height*svg_ratio, 0]);
+        .range([svg_height, 0]);
 
     // Create the line to do the paths around the airfoil.
-    var line = d3.svg.line()
+    line = d3.svg.line()
         .interpolate('linear')
         .x(function(d) {
             return x_scale(d.x);
@@ -117,29 +206,37 @@ Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
         .attr('cx', function(d) {return x_scale(d.x)})
         .attr('cy', function(d) {return y_scale(d.y)})
         .attr('fill', 'red');
+};
 
-    d3.select('#cx_input')
-        .on('change', function(){
-            p_airfoil.cx = Number($('#cx_input').val());
-            p_airfoil.calc_airfoil();
+var populate_airfoil_params = function(){
+    $('#r_input').val(p_airfoil.r);
+    $('#cx_input').val(p_airfoil.cx);
+    $('#ct_input').val(p_airfoil.ct);
+    $('#uct_input').val(p_airfoil.uct*180.0/Math.PI);
+    $('#b1_input').val(p_airfoil.b1*180.0/Math.PI);
+    $('#db1_input').val(p_airfoil.db1*180.0/Math.PI);
+    $('#rle_input').val(p_airfoil.rle);
+    $('#b2_input').val(p_airfoil.b2*180.0/Math.PI);
+    $('#rte_input').val(p_airfoil.rte);
+    $('#nb_input').val(p_airfoil.nb);
+    $('#o_input').val(p_airfoil.o);
+};
 
-            zoom_group.selectAll('path.line')
-                .data([p_airfoil.le_pts, p_airfoil.te_pts, p_airfoil.ss_pts, p_airfoil.ps_pts, p_airfoil.thrt_pts])
-                .attr('d', function(d) {return line(d)})
-                .attr("stroke", "blue")
-                .attr("stroke-width", 1.0)
-                .attr("fill", "none");
+var redraw_airfoil = function(){
+    var zoom_group = svg.select('g.zoom_group')
+    zoom_group.selectAll('path.line')
+        .data([p_airfoil.le_pts, p_airfoil.te_pts, p_airfoil.ss_pts, p_airfoil.ps_pts, p_airfoil.thrt_pts])
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
 
-            zoom_group.selectAll('circle.points')
-                .data([p_airfoil.pt1, p_airfoil.pt2, p_airfoil.pt3, p_airfoil.pt4, p_airfoil.pt5])
-                .attr('r', 2)
-                .attr('cx', function(d) {return x_scale(d.x)})
-                .attr('cy', function(d) {return y_scale(d.y)})
-                .attr('fill', 'red');
-            return false;
-        });
-
-    // zoom_group.attr("transform", "translate(" + current_translate + ")" + " scale(" + current_scale + ")");
+    zoom_group.selectAll('circle.points')
+        .data([p_airfoil.pt1, p_airfoil.pt2, p_airfoil.pt3, p_airfoil.pt4, p_airfoil.pt5])
+        .attr('r', 2)
+        .attr('cx', function(d) {return x_scale(d.x)})
+        .attr('cy', function(d) {return y_scale(d.y)})
+        .attr('fill', 'red');
 };
 
 // Template.airfoil_section_svg.rendered = function sectionOnCreated() {
@@ -303,3 +400,23 @@ Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
 //         .call(drag_point);
 //
 // };
+
+Template.hello.onCreated(function helloOnCreated() {
+    // counter starts at 0
+    this.counter = new ReactiveVar(0);
+});
+
+Template.hello.helpers({
+    counter() {
+        return Template.instance().counter.get();
+    },
+});
+
+Template.hello.events({
+    'click button'(event, instance) {
+        // increment the counter when button is clicked
+        instance.counter.set(instance.counter.get() + 1);
+        console.log(p_airfoil.toString());
+    },
+});
+

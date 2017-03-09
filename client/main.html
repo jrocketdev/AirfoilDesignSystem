@@ -3,11 +3,13 @@
 </head>
 
 <body>
-    <h1>Welcome to Meteor!</h1>
+    <div class="container">
+    <!--<h1>Welcome to Meteor!</h1>-->
 
-    {{> hello}}
-    {{> info}}
+    <!--{{> hello}}-->
+    <!--{{> info}}-->
     {{> airfoil_sec_svg}}
+    </div>
 </body>
 
 <template name="hello">
@@ -26,8 +28,36 @@
 </template>
 
 <template name="airfoil_sec_svg">
-    Cx: <input id='cx_input' type="number" name="cx_input" step="0.001"><br>
-    <svg id="airfoil_section">
+    <div class="row">
+        <div class="col-md-3">
+            <label class="">Radius (R)</label><br>
+            <input id="r_input" type="number" class="" placeholder="" step=0.1><br>
+            <label class="">Axial Chord (Cx)</label><br>
+            <input id="cx_input" type="number" class="" placeholder="" step=0.01><br>
+            <label class="">Tangential Chord (Ct)</label><br>
+            <input id="ct_input" type="number" class="" placeholder="" step=0.01><br>
+            <label class="">Uncovered Turning (UCT)</label><br>
+            <input id="uct_input" type="number" class="" placeholder="" step=0.1><br>
+            <label class="">Inlet Angle (B1)</label><br>
+            <input id="b1_input" type="number" class="" placeholder="" step=0.1><br>
+            <label class="">Inlet Wedge Angle (dB1)</label><br>
+            <input id="db1_input" type="number" class="" placeholder="" step=0.1><br>
+            <label class="">Leading Edge Radius (RLE)</label><br>
+            <input id="rle_input" type="number" class="" placeholder="" step=0.001><br>
+            <label class="">Outlet Angle (B2)</label><br>
+            <input id="b2_input" type="number" class="" placeholder="" step=0.1><br>
+            <label class="">Trailing Edge Radius (RTE)</label><br>
+            <input id="rte_input" type="number" class="" placeholder="" step=0.001><br>
+            <label class="">Airfoil Count (NB)</label><br>
+            <input id="nb_input" type="number" class="" placeholder="" step=1><br>
+            <label class="">Throat (O)</label><br>
+            <input id="o_input" type="number" class="" placeholder="" step=0.01><br>
+        </div>
 
-    </svg>
+        <div class="col-md-9">
+            <svg id="airfoil_section" width="100%" height="100%" style="background-color: gray">
+
+            </svg>
+        </div>
+    </div>
 </template>

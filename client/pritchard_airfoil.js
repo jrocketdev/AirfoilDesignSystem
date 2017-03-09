@@ -221,7 +221,7 @@ PritchardAirfoil.prototype.find_db2 = function() {
 };
 
 PritchardAirfoil.prototype.get_extents = function() {
-    return [-2.0*(this.rte), d3.max([1.2*this.ct, 1.1*(this.cx + this.rte)])];
+    return [-2.0*(this.rte), d3.max([this.ct, (this.cx + this.rte)])];
 }
 
 // to_string - Output the information from independent/dependent vars
