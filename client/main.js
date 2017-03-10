@@ -9,7 +9,6 @@ var AIRFOIL_KEY = 'airfoil';
 var DUPLICATE_KEY = 'draw_duplicate';
 var p_airfoil = new PritchardAirfoil(default_pritchard_params);
 
-
 // SVG Information & Variables
 var svg_width = 0;
 var svg_height = 0;
@@ -20,7 +19,7 @@ var x_scale;
 var y_scale;
 var line;
 var duplicate_line;
-var cntrl_pt_radius = 4;
+var cntrl_pt_radius = 3;
 var current_scale = 1.0;
 var current_translate = [0, 0];
 var x_constraints;
@@ -182,20 +181,13 @@ Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
     draw_airfoil_initial();
 
     // Draw the reference points
-    var circ = zoom_group.selectAll('circle.ref_points')
-        .data([p_airfoil.pt1, p_airfoil.pt2, p_airfoil.pt3, p_airfoil.pt4, p_airfoil.pt5])
-        .enter().append('circle')
-        .attr('class', 'ref_points')
-        .attr('r', 2)
-        .attr('cx', function(d) {return x_scale(d.x)})
-        .attr('cy', function(d) {return y_scale(d.y)})
-        .attr('fill', 'red');
+    draw_refpoints();
 
     // Draw control points.
     draw_control();
 };
 
-var determine_scales = function(){
+function determine_scales(){
     // Determine max and mins
     var min_x, min_y,max_x, max_y, ss_ys;
     min_x = 0.0;
@@ -206,7 +198,7 @@ var determine_scales = function(){
         ss_ys.push(p_airfoil.ss_pts[i].y);
     }
     max_y = d3.max(ss_ys);
-    console.log(min_x, max_x, min_y, max_y);
+    // console.log(min_x, max_x, min_y, max_y);
     var x_dist, y_dist, mid_point;
     x_dist = max_x - min_x;
     y_dist = max_y - min_y;
@@ -241,21 +233,30 @@ var determine_scales = function(){
     //     .range([svg_height, 0]);
 };
 
-var populate_airfoil_params = function(){
-    $('#r_input').val(p_airfoil.r);
-    $('#cx_input').val(p_airfoil.cx);
-    $('#ct_input').val(p_airfoil.ct);
-    $('#uct_input').val(p_airfoil.uct*180.0/Math.PI);
-    $('#b1_input').val(p_airfoil.b1*180.0/Math.PI);
-    $('#db1_input').val(p_airfoil.db1*180.0/Math.PI);
-    $('#rle_input').val(p_airfoil.rle);
-    $('#b2_input').val(p_airfoil.b2*180.0/Math.PI);
-    $('#rte_input').val(p_airfoil.rte);
-    $('#nb_input').val(p_airfoil.nb);
-    $('#o_input').val(p_airfoil.o);
+function point_at_angle_dist(pt, ang, dist){
+    return {x: pt.x + dist*Math.cos(ang), y: pt.y + dist*Math.sin(ang)};
 };
 
-var draw_airfoil_initial = function() {
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+function populate_airfoil_params(){
+    $('#r_input').val(p_airfoil.r);
+    $('#cx_input').val(round(p_airfoil.cx, 4));
+    $('#ct_input').val(round(p_airfoil.ct, 4));
+    $('#uct_input').val(round(p_airfoil.uct*180.0/Math.PI, 3));
+    $('#b1_input').val(round(p_airfoil.b1*180.0/Math.PI, 3));
+    $('#db1_input').val(p_airfoil.db1*180.0/Math.PI);
+    $('#rle_input').val(p_airfoil.rle);
+    $('#b2_input').val(round(p_airfoil.b2*180.0/Math.PI, 3));
+    $('#rte_input').val(p_airfoil.rte);
+    $('#nb_input').val(p_airfoil.nb);
+    $('#o_input').val(round(p_airfoil.o, 4));
+
+};
+
+function draw_airfoil_initial() {
     zoom_group.selectAll('path.le_line')
         .data([p_airfoil.le_pts])
         .enter()
@@ -311,7 +312,7 @@ var draw_airfoil_initial = function() {
     }
 };
 
-var draw_duplicate_airfoil = function() {
+function draw_duplicate_airfoil() {
     zoom_group.selectAll('path.duplicate_line')
         .data([p_airfoil.le_pts, p_airfoil.te_pts, p_airfoil.ss_pts, p_airfoil.ps_pts, p_airfoil.thrt_pts])
         .attr('d', function(d) {return duplicate_line(d)})
@@ -324,73 +325,85 @@ var draw_duplicate_airfoil = function() {
         .attr("fill", "none");
 };
 
-var redraw_airfoil = function(){
+function redraw_airfoil(){
     redraw_le();
     redraw_te();
     redraw_ss();
     redraw_ps();
     redraw_thrt();
 
-    redraw_refpoints()
+    draw_refpoints()
 
     if (Session.get(DUPLICATE_KEY)) {
         draw_duplicate_airfoil();
-    }
+    };
+
+    draw_control();
 };
 
-var redraw_refpoints = function(){
+function draw_refpoints(){
     zoom_group.selectAll('circle.ref_points')
         .data([p_airfoil.pt1, p_airfoil.pt2, p_airfoil.pt3, p_airfoil.pt4, p_airfoil.pt5])
         .attr('r', 2)
         .attr('cx', function(d) {return x_scale(d.x)})
         .attr('cy', function(d) {return y_scale(d.y)})
-        .attr('fill', 'red');
+        .attr('fill', 'blue')
+        .enter().append('circle')
+        .attr('class', 'ref_points')
+        .attr('r', 2)
+        .attr('cx', function(d) {return x_scale(d.x)})
+        .attr('cy', function(d) {return y_scale(d.y)})
+        .attr('fill', 'blue');
 };
 
-var redraw_le = function(){
+function redraw_le(){
     zoom_group.selectAll('path.le_line')
         .data([p_airfoil.le_pts])
         .attr('d', function(d) {return line(d)});
 };
 
-var redraw_te = function(){
+function redraw_te(){
     zoom_group.selectAll('path.te_line')
         .data([p_airfoil.te_pts])
         .attr('d', function(d) {return line(d)});
 };
 
-var redraw_ss = function(){
+function redraw_ss(){
     zoom_group.selectAll('path.ss_line')
         .data([p_airfoil.ss_pts])
         .attr('d', function(d) {return line(d)});
 };
 
-var redraw_thrt = function(){
+function redraw_thrt(){
     zoom_group.selectAll('path.thrt_line')
         .data([p_airfoil.thrt_pts])
         .attr('d', function(d) {return line(d)});
 };
 
-var redraw_ps = function(){
+function redraw_ps(){
     zoom_group.selectAll('path.ps_line')
         .data([p_airfoil.ps_pts])
         .attr('d', function(d) {return line(d)});
 };
 
-var draw_control = function(){
+function draw_control(){
+    draw_thrt_control();
+    draw_b1_control();
+    draw_b2_control();
     draw_cx_control();
+    draw_ct_control();
 }
 
-var draw_cx_control = function(){
+function draw_cx_control(){
     var drag_point = d3.behavior.drag()
         .on('dragstart', function(d) {
             this.parentNode.appendChild(this);
         })
-        .on('drag', function(d, i) {
+        .on('drag', function(d) {
             var e, x, y;
             e = d3.event;
-            x = d.x + e.dx/x_scale(1);
-            y = d.y; // + e.y;
+            x = x_scale.invert(x_scale(d.x) + e.dx);
+            // y = d.y + e.y;
 
             if (x >= 0) {
                 // change cx, cy only after we know it's within
@@ -401,24 +414,24 @@ var draw_cx_control = function(){
                 d.x = x;
 
                 // Update airfoil
-                p_airfoil.cx = d.x;
+                p_airfoil.cx = d.x + p_airfoil.rte;
                 p_airfoil.calc_airfoil();
 
                 // Update geom displayed
                 d3.select(this).attr({cx: x_scale(d.x), cy: y_scale(d.y)});
 
-                zoom_group.selectAll('path.cx_cntrl')
-                    .data([[{x: 0, y: -2*p_airfoil.rle}, {x: p_airfoil.cx, y: -2*p_airfoil.rle}]])
-                    .attr('d', function(d) {return line(d)})
+                // zoom_group.selectAll('path.cx_cntrl')
+                //     .data([[{x: 0, y: 0}, {x: p_airfoil.cx - p_airfoil.rte, y: 0}]])
+                //     .attr('d', function(d) {return line(d)});
 
 
                 redraw_airfoil();
                 populate_airfoil_params();
             }
-        })
+        });
 
     zoom_group.selectAll('circle.cx_cntrl')
-        .data([{x: p_airfoil.cx, y: -2*p_airfoil.rle}])
+        .data([{x: p_airfoil.cx - p_airfoil.rte, y: 0}])
         .attr('cx', function(d) { return x_scale(d.x); })
         .attr('cy', function(d) { return y_scale(d.y); })
         .enter()
@@ -430,14 +443,290 @@ var draw_cx_control = function(){
         .attr('class', 'cx_cntrl')
         .call(drag_point);
 
-    zoom_group.selectAll('path.cx_cntrl')
-        .data([[{x: 0, y: -2*p_airfoil.rle}, {x: p_airfoil.cx, y: -2*p_airfoil.rle}]])
+    // zoom_group.selectAll('path.cx_cntrl')
+    //     .data([[{x: 0, y: 0}, {x: p_airfoil.cx - p_airfoil.rte, y: 0}]])
+    //     .attr('d', function(d) {return line(d)})
+    //     .enter()
+    //     .append('path')
+    //     .attr('d', function(d) {return line(d)})
+    //     .attr('fill', 'red')
+    //     .attr('class', 'cx_cntrl')
+    //     .attr("stroke", "red")
+    //     .attr("stroke-width", 1.0)
+    //     .attr("fill", "none");
+};
+
+function draw_ct_control(){
+    var drag_point = d3.behavior.drag()
+        .on('dragstart', function(d) {
+            this.parentNode.appendChild(this);
+        })
+        .on('drag', function(d) {
+            var e, x, y;
+            e = d3.event;
+            x = d.x; // + e.dx/x_scale(1);
+            y = y_scale.invert(y_scale(d.y) + e.dy);
+
+            if (y >= 0) {
+                // change cx, cy only after we know it's within
+                // bounds...this gives smoother movement around the
+                // boundaries
+
+                // Update point x value
+                d.y = y;
+
+                // Update airfoil
+                p_airfoil.ct = d.y;
+                p_airfoil.calc_airfoil();
+
+                // Update geom displayed
+                d3.select(this).attr({cx: x_scale(d.x), cy: y_scale(d.y)});
+
+                // zoom_group.selectAll('path.ct_cntrl')
+                //     .data([[{x: p_airfoil.rle, y: 0}, {x: p_airfoil.rle, y: p_airfoil.ct}]])
+                //     .attr('d', function(d) {return line(d)});
+
+                redraw_airfoil();
+                populate_airfoil_params();
+            }
+        })
+
+    zoom_group.selectAll('circle.ct_cntrl')
+        .data([{x: p_airfoil.rle, y: p_airfoil.ct}])
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .enter()
+        .append('circle')
+        .attr('r', cntrl_pt_radius)
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .attr('fill', 'red')
+        .attr('class', 'ct_cntrl')
+        .call(drag_point);
+
+    // zoom_group.selectAll('path.ct_cntrl')
+    //     .data([[{x: p_airfoil.rle, y: 0}, {x: p_airfoil.rle, y: p_airfoil.ct}]])
+    //     .attr('d', function(d) {return line(d)})
+    //     .enter()
+    //     .append('path')
+    //     .attr('d', function(d) {return line(d)})
+    //     .attr('fill', 'red')
+    //     .attr('class', 'ct_cntrl')
+    //     .attr("stroke", "red")
+    //     .attr("stroke-width", 1.0)
+    //     .attr("fill", "none");
+};
+
+function draw_thrt_control(){
+    var drag_point = d3.behavior.drag()
+        .on('dragstart', function(d) {
+            this.parentNode.appendChild(this);
+        })
+        .on('drag', function(d) {
+            var e, xnew, ynew, x5, y5, dist, m, b;
+            e = d3.event;
+
+            // Get new data
+            ynew = y_scale.invert(y_scale(d.y) + e.dy);
+            x5 = p_airfoil.pt5.x;
+            y5 = p_airfoil.pt5.y + p_airfoil.r*(2*Math.PI/p_airfoil.nb);
+            m = (p_airfoil.pt2.y - y5)/(p_airfoil.pt2.x - x5);
+            b = y5 - m*x5;
+            xnew = (ynew - b)/m;
+
+            // Calc dist from new point to pt5 on the opposite airfoil
+            dist = Math.sqrt(Math.pow(x5-xnew, 2) + Math.pow(y5-ynew, 2));
+
+            if (ynew <= y5 && dist > 0) {
+                // console.log(dist);
+                // Update airfoil
+                p_airfoil.o = dist;
+                p_airfoil.calc_airfoil();
+
+                d.y = ynew;
+                d.x = xnew;
+
+                // Update geom displayed
+                d3.select(this).attr({cx: x_scale(d.x), cy: y_scale(d.y)});
+
+                zoom_group.selectAll('path.thrt_cntrl')
+                    .data([[
+                        p_airfoil.pt2,
+                        {x: p_airfoil.pt5.x, y: p_airfoil.pt5.y + p_airfoil.r*(2*Math.PI/p_airfoil.nb)}
+                    ]])
+                    .attr('d', function(d) {return line(d)});
+
+                redraw_airfoil();
+                populate_airfoil_params();
+            }
+        });
+
+    zoom_group.selectAll('circle.thrt_cntrl')
+        .data([p_airfoil.pt2])
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .enter()
+        .append('circle')
+        .attr('r', cntrl_pt_radius)
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .attr('fill', 'red')
+        .attr('class', 'thrt_cntrl')
+        .call(drag_point);
+
+    zoom_group.selectAll('path.thrt_cntrl')
+        .data([[
+            p_airfoil.pt2,
+            {x: p_airfoil.pt5.x, y: p_airfoil.pt5.y + p_airfoil.r*(2*Math.PI/p_airfoil.nb)}
+            ]])
         .attr('d', function(d) {return line(d)})
         .enter()
         .append('path')
         .attr('d', function(d) {return line(d)})
         .attr('fill', 'red')
-        .attr('class', 'cx_cntrl')
+        .attr('class', 'thrt_cntrl')
+        .attr("stroke", "red")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
+};
+
+function draw_b1_control(){
+    var drag_point = d3.behavior.drag()
+        .on('dragstart', function(d) {
+            this.parentNode.appendChild(this);
+        })
+        .on('drag', function(d) {
+            var e, xnew, ynew, ang, new_pt, back_pt;
+            e = d3.event;
+
+            // Get new data
+            xnew = x_scale.invert(x_scale(d.x) + e.dx);
+            ynew = y_scale.invert(y_scale(d.y) + e.dy);
+
+
+            // Calc dist from new point to pt5 on the opposite airfoil
+            ang = Math.atan2(ynew-p_airfoil.ct, xnew-p_airfoil.rle) + Math.PI;
+            // console.log(p_airfoil.b1, ang);
+
+            // Update airfoil
+            p_airfoil.b1 = ang;
+            p_airfoil.calc_airfoil();
+
+            new_pt = point_at_angle_dist({x: p_airfoil.rle, y: p_airfoil.ct}, ang + Math.PI, 4*p_airfoil.rle);
+            back_pt = point_at_angle_dist({x: p_airfoil.rle, y: p_airfoil.ct}, ang, p_airfoil.rle);
+            d.y = new_pt.y;
+            d.x = new_pt.x;
+
+            // Update geom displayed
+            d3.select(this).attr({cx: x_scale(d.x), cy: y_scale(d.y)});
+
+            zoom_group.selectAll('path.b1_cntrl')
+                .data([[
+                    new_pt,
+                    back_pt
+                ]])
+                .attr('d', function(d) {return line(d)});
+
+            redraw_airfoil();
+            populate_airfoil_params();
+        });
+
+    var circ_cntr = {x: p_airfoil.rle, y: p_airfoil.ct};
+    var back_pt = point_at_angle_dist({x: p_airfoil.rle, y: p_airfoil.ct}, p_airfoil.b1, p_airfoil.rle);
+    var cntrl_pt = point_at_angle_dist(circ_cntr, p_airfoil.b1 + Math.PI, 4*p_airfoil.rle);
+
+    zoom_group.selectAll('circle.b1_cntrl')
+        .data([cntrl_pt])
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .enter()
+        .append('circle')
+        .attr('r', cntrl_pt_radius)
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .attr('fill', 'red')
+        .attr('class', 'b1_cntrl')
+        .call(drag_point);
+
+    zoom_group.selectAll('path.b1_cntrl')
+        .data([[cntrl_pt, back_pt]])
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('d', function(d) {return line(d)})
+        .attr('fill', 'red')
+        .attr('class', 'b1_cntrl')
+        .attr("stroke", "red")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
+};
+
+function draw_b2_control(){
+    var drag_point = d3.behavior.drag()
+        .on('dragstart', function(d) {
+            this.parentNode.appendChild(this);
+        })
+        .on('drag', function(d) {
+            var e, xnew, ynew, ang, new_pt, back_pt;
+            e = d3.event;
+
+            // Get new data
+            xnew = x_scale.invert(x_scale(d.x) + e.dx);
+            ynew = y_scale.invert(y_scale(d.y) + e.dy);
+
+
+            // Calc dist from new point to pt5 on the opposite airfoil
+            ang = Math.atan2(ynew, xnew-(p_airfoil.cx - p_airfoil.rte));
+            // console.log(p_airfoil.b2, ang);
+
+            // Update airfoil
+            p_airfoil.b2 = ang;
+            p_airfoil.calc_airfoil();
+
+            new_pt = point_at_angle_dist({x: p_airfoil.cx - p_airfoil.rte, y: 0}, ang, 5*p_airfoil.rte);
+            back_pt = point_at_angle_dist({x: p_airfoil.cx - p_airfoil.rte, y: 0}, ang + Math.PI, p_airfoil.rte);
+            d.y = new_pt.y;
+            d.x = new_pt.x;
+
+            // Update geom displayed
+            d3.select(this).attr({cx: x_scale(d.x), cy: y_scale(d.y)});
+
+            zoom_group.selectAll('path.b2_cntrl')
+                .data([[
+                    new_pt,
+                    back_pt
+                ]])
+                .attr('d', function(d) {return line(d)});
+
+            redraw_airfoil();
+            populate_airfoil_params();
+        });
+
+    var circ_cntr = {x: p_airfoil.cx - p_airfoil.rte, y: 0};
+    var back_pt = point_at_angle_dist(circ_cntr, p_airfoil.b2 + Math.PI, p_airfoil.rte);
+    var cntrl_pt = point_at_angle_dist(circ_cntr, p_airfoil.b2, 5*p_airfoil.rte);
+
+    zoom_group.selectAll('circle.b2_cntrl')
+        .data([cntrl_pt])
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .enter()
+        .append('circle')
+        .attr('r', cntrl_pt_radius)
+        .attr('cx', function(d) { return x_scale(d.x); })
+        .attr('cy', function(d) { return y_scale(d.y); })
+        .attr('fill', 'red')
+        .attr('class', 'b2_cntrl')
+        .call(drag_point);
+
+    zoom_group.selectAll('path.b2_cntrl')
+        .data([[cntrl_pt, back_pt]])
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('d', function(d) {return line(d)})
+        .attr('fill', 'red')
+        .attr('class', 'b2_cntrl')
         .attr("stroke", "red")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");

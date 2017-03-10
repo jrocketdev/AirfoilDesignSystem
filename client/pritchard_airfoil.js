@@ -224,6 +224,44 @@ PritchardAirfoil.prototype.get_extents = function() {
     return [-2.0*(this.rte), d3.max([this.ct, (this.cx + this.rte)])];
 }
 
+PritchardAirfoil.prototype.update_val = function(key, value){
+    switch (key){
+        case 'r':
+            this.r = value;
+            break;
+        case 'cx':
+            this.cx = value;
+            break;
+        case 'ct':
+            this.ct = value;
+            break;
+        case 'uct':
+            this.uct = value;
+            break;
+        case 'b1':
+            this.b1 = value;
+            break;
+        case 'db1':
+            this.db1 = value;
+            break;
+        case 'rle':
+            this.rle = value;
+            break;
+        case 'b2':
+            this.b2 = value;
+            break;
+        case 'rte':
+            this.rte = value;
+            break;
+        case 'nb':
+            this.nb = value;
+            break;
+        case 'o':
+            this.o = value;
+            break;
+    }
+};
+
 // to_string - Output the information from independent/dependent vars
 PritchardAirfoil.prototype.toString = function() {
     msg = "Airfoil Information:\n";
