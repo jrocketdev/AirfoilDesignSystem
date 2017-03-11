@@ -29,9 +29,9 @@ var y_constraints;
 Meteor.startup(function(){
 
     $(window).resize(function(evt) {
-        console.log('Need to fix resizing for svg.')
+        // console.log('Need to fix resizing for svg.')
         if (svg_width != $('#airfoil_section')[0].getBoundingClientRect().width){
-            console.log('Resizing...');
+            // console.log('Resizing...');
             svg_width = $('#airfoil_section')[0].getBoundingClientRect().width;
             svg_height = svg_width*0.8;
             svg.attr('height', svg_width*0.8);
@@ -338,12 +338,11 @@ function redraw_airfoil(){
     redraw_ps();
     redraw_thrt();
 
-    draw_refpoints()
+    draw_refpoints();
 
-    console.log(Session.get(DUPLICATE_KEY))
     if (Session.get(DUPLICATE_KEY)) {
         draw_duplicate_airfoil();
-    };
+    }
 
     draw_control();
 };
