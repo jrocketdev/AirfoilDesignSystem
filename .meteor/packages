@@ -24,3 +24,5 @@ d3js:d3
 twbs:bootstrap
 session
 iron:router
+accounts-ui
+accounts-password

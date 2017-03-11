@@ -8,6 +8,7 @@
 
 <template name="design_page">
     <div class="container">
+        {{> design_toolbar}}
         <div class="row">
             <div class="col-md-3">
                 {{> parameter_sidebar}}
@@ -67,4 +68,14 @@
         <li>The red point in the middle of the trailing edge center can be moved left and right to change axial chord.</li>
         <li>If the airfoil outline (blue) breaks it means that parameter combination will not satisfy the math of the airfoil and is not valid.</li>
     </ul>
+</template>
+
+<template name="design_toolbar">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel">
+
+            </div>
+        </div>
+    </div>
 </template>
