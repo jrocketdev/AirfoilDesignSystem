@@ -1,0 +1,68 @@
+<head>
+  <title>AirfoilDesignSystem</title>
+</head>
+
+<body>
+
+</body>
+
+<template name="design_page">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                {{> parameter_sidebar}}
+            </div>
+
+            <div class="col-md-9">
+                {{> airfoil_svg_section}}
+            </div>
+        </div>
+        <div class="row">
+            {{> instructions}}
+        </div>
+    </div>
+</template>
+
+<template name="parameter_sidebar">
+    <label class="">Radius (R)</label><br>
+    <input id="r_input" type="number" class="" placeholder="" step=0.1><br>
+    <label class="">Axial Chord (Cx)</label><br>
+    <input id="cx_input" type="number" class="" placeholder="" step=0.01><br>
+    <label class="">Tangential Chord (Ct)</label><br>
+    <input id="ct_input" type="number" class="" placeholder="" step=0.01><br>
+    <label class="">Uncovered Turning (UCT)</label><br>
+    <input id="uct_input" type="number" class="" placeholder="" step=0.1><br>
+    <label class="">Inlet Angle (B1)</label><br>
+    <input id="b1_input" type="number" class="" placeholder="" step=0.1><br>
+    <label class="">Inlet Wedge Angle (dB1)</label><br>
+    <input id="db1_input" type="number" class="" placeholder="" step=0.1><br>
+    <label class="">Leading Edge Radius (RLE)</label><br>
+    <input id="rle_input" type="number" class="" placeholder="" step=0.001><br>
+    <label class="">Outlet Angle (B2)</label><br>
+    <input id="b2_input" type="number" class="" placeholder="" step=0.1><br>
+    <label class="">Trailing Edge Radius (RTE)</label><br>
+    <input id="rte_input" type="number" class="" placeholder="" step=0.001><br>
+    <label class="">Airfoil Count (NB)</label><br>
+    <input id="nb_input" type="number" class="" placeholder="" step=1><br>
+    <label class="">Throat (O)</label><br>
+    <input id="o_input" type="number" class="" placeholder="" step=0.01><br>
+</template>
+
+<template name="airfoil_svg_section">
+    <svg id="airfoil_section" width="100%" height="100%" style="background-color: gray">
+
+    </svg>
+</template>
+
+<template name="instructions">
+    Hi there! With some more work I hope to have some sort of automated tutorial to show the user how to modify
+    airfoil. Until then please consult the list of user abilities below.<br><br>
+    <ul>
+        <li>Manipulate values in the sidebar to see the airfoil change. (Some browser require you to 'exit' the input box after editing.</li>
+        <li>You can click and drag any of the red point in the airfoil display to change some of the parameters as well.</li>
+        <li>The red point to the far left attached to a longer red line changes the angle of the airfoil nose.</li>
+        <li>The red point in the center of the circle at the leading edge (left side of the airfoil) can be dragged up and down to change Tangential Chord.</li>
+        <li>The red point about half-way along the airfoil controls the "throat".</li>
+        <li>If the airfoil outline (blue) breaks it means that parameter combination will not satisfy the math of the airfoil and is not valid.</li>
+    </ul>
+</template>

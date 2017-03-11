@@ -1,7 +1,7 @@
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { PritchardAirfoil, default_pritchard_params } from './pritchard_airfoil';
-import './main.html';
+import './design_page.html';
 
 // Set up global variables to keep track of.
 // var points = [{x: 10, y: 50}, {x: 10, y: 10}, {x: 100, y: 10}, {x: 180, y: 190}, {x: 50, y: 50}];
@@ -14,6 +14,7 @@ var svg_width = 0;
 var svg_height = 0;
 var svg_h_to_w_ratio = 0.75;
 var svg;
+var bg_rect;
 var zoom_group;
 var x_scale;
 var y_scale;
@@ -27,19 +28,22 @@ var y_constraints;
 
 Meteor.startup(function(){
 
-    Session.set(DUPLICATE_KEY, true);
-
     $(window).resize(function(evt) {
         console.log('Need to fix resizing for svg.')
         if (svg_width != $('#airfoil_section')[0].getBoundingClientRect().width){
             console.log('Resizing...');
             svg_width = $('#airfoil_section')[0].getBoundingClientRect().width;
+            svg_height = svg_width*0.8;
             svg.attr('height', svg_width*0.8);
+            bg_rect.attr('width', svg_width)
+                .attr('height', svg_height)
+            determine_scales();
+            redraw_airfoil();
         }
     });
 });
 
-Template.airfoil_sec_svg.events({
+Template.design_page.events({
     'change #r_input'(event, instance){
         p_airfoil.r = Number(event.target.value);
         p_airfoil.calc_airfoil();
@@ -108,7 +112,9 @@ Template.airfoil_sec_svg.events({
     }
 });
 
-Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
+Template.design_page.rendered = function sectionOnCreated() {
+    // Set the initial value for duplicating airfoil.
+    Session.set(DUPLICATE_KEY, true);
 
     // Populate the airfoil parameters in the sidebar list.
     populate_airfoil_params();
@@ -126,11 +132,11 @@ Template.airfoil_sec_svg.rendered = function sectionOnCreated() {
 
     // Set up the SVG area with width and height
     svg = d3.select('#airfoil_section');
-    svg.attr('width', svg_width);
+    // svg.attr('width', svg_width);
     svg.attr('height', svg_height);
 
     // Set up background SVG
-    var bg_rect = svg.append('rect')
+    bg_rect = svg.append('rect')
         .attr('width', svg_width)
         .attr('height', svg_height)
         .attr('fill', 'silver')
@@ -334,6 +340,7 @@ function redraw_airfoil(){
 
     draw_refpoints()
 
+    console.log(Session.get(DUPLICATE_KEY))
     if (Session.get(DUPLICATE_KEY)) {
         draw_duplicate_airfoil();
     };
