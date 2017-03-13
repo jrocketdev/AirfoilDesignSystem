@@ -68,13 +68,6 @@ Template.public_airfoils.onRendered(function() {
         airfoil_data.exit()
             .remove();
 
-        // airfoil_row.selectAll('div.airfoil_svg')
-        //     .call(function(d){
-        //         d.append('p')
-        //             .text('hello');
-        //         // console.log(d.attr('id'));
-        //     });
-
         airfoil_row.selectAll('svg.airfoil_svg')
             .each(function (d) {update_airfoil(d);});
     });
