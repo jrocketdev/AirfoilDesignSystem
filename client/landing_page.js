@@ -27,7 +27,7 @@ Template.airfoil_jumbotron.onRendered(function() {
 
         var airfoil_data = airfoil_row.selectAll('div.airfoil_svg')
             .data(airfoil_list, function(d, i){
-                return d._id;
+                return i;
             });
 
         airfoil_data.select('p').text(function(d){
@@ -48,7 +48,7 @@ Template.airfoil_jumbotron.onRendered(function() {
 
         airfoil_divs.append('svg')
             .attr('id', function(d) {
-                return d._id;
+                return 'Airfoil_' + d._id;
             })
             .attr('class', 'airfoil_svg')
             .attr('width', '100%');
@@ -71,7 +71,7 @@ Template.airfoil_jumbotron.onRendered(function() {
 function update_airfoil(airfoil_obj){
     console.log('Updating ' + airfoil_obj.name);
 
-    var svg_obj = d3.select('svg#' + airfoil_obj._id);
+    var svg_obj = d3.selectAll('svg#Airfoil_' + airfoil_obj._id);
     if (!svg_obj){
         return
     }

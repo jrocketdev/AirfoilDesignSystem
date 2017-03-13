@@ -54,7 +54,7 @@ Template.public_airfoils.onRendered(function() {
 
         airfoil_divs.append('svg')
             .attr('id', function(d) {
-                return d._id;
+                return 'Airfoil_' + d._id;
             })
             .attr('class', 'airfoil_svg')
             .attr('width', '100%');
@@ -84,7 +84,7 @@ Template.public_airfoils.onRendered(function() {
 function update_airfoil(airfoil_obj){
     console.log('Updating ' + airfoil_obj.name);
 
-    var svg_obj = d3.select('svg#' + airfoil_obj._id);
+    var svg_obj = d3.select('svg#Airfoil_' + airfoil_obj._id);
     if (!svg_obj){
         return
     }
