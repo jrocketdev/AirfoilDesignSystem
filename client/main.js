@@ -3,10 +3,8 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import { PritchardAirfoil, default_pritchard_params } from './pritchard_airfoil';
 import './design_page.html';
 
-// Set up global variables to keep track of.
-// var points = [{x: 10, y: 50}, {x: 10, y: 10}, {x: 100, y: 10}, {x: 180, y: 190}, {x: 50, y: 50}];
-var AIRFOIL_KEY = 'airfoil';
-var DUPLICATE_KEY = 'draw_duplicate';
+// Set up local variables to keep track of.
+var airfoil_id = DEFAULT_AIRFOIL_KEY;
 var p_airfoil = new PritchardAirfoil(default_pritchard_params);
 
 // SVG Information & Variables
@@ -26,93 +24,184 @@ var current_translate = [0, 0];
 var x_constraints;
 var y_constraints;
 
-Meteor.startup(function(){
-
-    $(window).resize(function(evt) {
-        // console.log('Need to fix resizing for svg.')
-        if (svg_width != $('#airfoil_section')[0].getBoundingClientRect().width){
-            // console.log('Resizing...');
-            svg_width = $('#airfoil_section')[0].getBoundingClientRect().width;
-            svg_height = svg_width*0.8;
-            svg.attr('height', svg_width*0.8);
-            bg_rect.attr('width', svg_width)
-                .attr('height', svg_height)
-            determine_scales();
-            redraw_airfoil();
-        }
-    });
-});
-
 Template.design_page.events({
     'change #r_input'(event, instance){
         p_airfoil.r = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #cx_input'(event, instance){
         p_airfoil.cx = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #ct_input'(event, instance){
         p_airfoil.ct = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #uct_input'(event, instance){
         p_airfoil.uct = Number(event.target.value)*Math.PI/180.0;
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #b1_input'(event, instance){
         p_airfoil.b1 = Number(event.target.value)*Math.PI/180.0;
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #db1_input'(event, instance){
         p_airfoil.db1 = Number(event.target.value)*Math.PI/180.0;
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #rle_input'(event, instance){
         p_airfoil.rle = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #b2_input'(event, instance){
         p_airfoil.b2 = Number(event.target.value)*Math.PI/180.0;
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #rte_input'(event, instance){
         p_airfoil.rte = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #nb_input'(event, instance){
         p_airfoil.nb = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     },
     'change #o_input'(event, instance){
         p_airfoil.o = Number(event.target.value);
         p_airfoil.calc_airfoil();
 
-        redraw_airfoil();
+        draw_airfoil();
     }
 });
 
-Template.design_page.rendered = function sectionOnCreated() {
+Template.airfoil_svg_section.rendered = function sectionOnCreated() {
+    $(window).resize(function(evt) {
+        // console.log('Need to fix resizing for svg.')
+        //todo: Need to check to make sure we are on design page....
+        if (Session.get(CURRENT_PAGE_KEY) == DESIGN_PAGE_KEY){
+            if (svg_width != $('#airfoil_section')[0].getBoundingClientRect().width){
+                // console.log('Resizing...');
+                svg_width = $('#airfoil_section')[0].getBoundingClientRect().width;
+                svg_height = svg_width*0.8;
+                svg.attr('height', svg_width*0.8);
+                bg_rect.attr('width', svg_width)
+                    .attr('height', svg_height)
+                determine_scales();
+                draw_airfoil();
+            }
+        }
+    });
+
+    // Update the airfoil to the new one.
+    update_airfoil_id();
+
+    render_svg();
+
+    // Set the airfoil page key now that it is rendered.
+    Session.set(CURRENT_PAGE_KEY, DESIGN_PAGE_KEY);
+};
+
+Template.design_toolbar.helpers({
+    name: function(){
+        return Session.get(AIRFOIL_NAME_KEY);
+    },
+    canEdit: function(){
+        // If the user isn't logged in. They can't edit anything
+        if (!Meteor.user()){
+            console.log('Not logged in.');
+            return false;
+        }
+
+        // If this is the default airfoil... they can edit. Otherwise they need to be the owner.
+        if (Session.get(AIRFOIL_KEY) == DEFAULT_AIRFOIL_KEY){
+            return true;
+        }
+        // It's not the default airfoil. They can only edit if they own it.
+        if (Session.get(AIRFOIL_CREATOR) == Meteor.userId()){
+            return true;
+        }
+
+        return false;
+    },
+    privateText: function() {
+        if (Session.get(IS_PRIVATE_KEY)){
+            return "Private";
+        } else {
+            return "Public";
+        }
+    }
+});
+
+Template.design_toolbar.events({
+    'click .js-save-airfoil' (event, instance){
+        // Update the airfoil params with what is currently showed on Screen.
+
+        if (Session.get(AIRFOIL_KEY) == DEFAULT_AIRFOIL_KEY){
+            // THis was the default airfoil... which means we need to add a new one into the db.
+            var airfoil_obj = {
+                name: Session.get(AIRFOIL_NAME_KEY),
+                private: Session.get(IS_PRIVATE_KEY),
+                creator: Session.get(AIRFOIL_CREATOR),
+                parameters: p_airfoil.get_params()
+            };
+            console.log('Adding new airfoil to the DB for the current user.');
+            Meteor.call('addAirfoil', airfoil_obj, function(err, result){
+                console.log(result);
+                if (result){
+                    // We have a valid airfoil. Update session variable.
+                    Session.set(AIRFOIL_KEY, result);
+                }
+            });
+        } else {
+            var airfoil_obj = {
+                name: Session.get(AIRFOIL_NAME_KEY),
+                private: Session.get(IS_PRIVATE_KEY),
+                creator: Session.get(AIRFOIL_CREATOR),
+                parameters: p_airfoil.get_params(),
+                _id: Session.get(AIRFOIL_KEY)
+            };
+            Meteor.call('updateAirfoil', airfoil_obj, function(err, result){
+                console.log(result);
+            });
+            console.log('This airfoil already exists... updating it.');
+        }
+    },
+    'click .js-edit-name' (event, instance){
+        var new_name = $('#airfoil_name_edit').val();
+        Session.set(AIRFOIL_NAME_KEY, new_name);
+    },
+    'click .js-update-privacy' (event, instance){
+        Session.set(IS_PRIVATE_KEY, !Session.get(IS_PRIVATE_KEY));
+    }
+})
+
+Tracker.autorun(function() {
+    // console.log('TRACKER TRIGGERED', Session.get(AIRFOIL_KEY) );
+    if (Session.get(AIRFOIL_KEY) != airfoil_id){
+        update_airfoil_id();
+    }
+});
+
+function render_svg() {
     // Set the initial value for duplicating airfoil.
     Session.set(DUPLICATE_KEY, true);
 
@@ -184,13 +273,36 @@ Template.design_page.rendered = function sectionOnCreated() {
         });
 
     // Draw the airfoil
-    draw_airfoil_initial();
+    draw_airfoil();
+}
 
-    // Draw the reference points
-    draw_refpoints();
+function update_airfoil_id() {
+    airfoil_id = Session.get(AIRFOIL_KEY);
+    if (airfoil_id == DEFAULT_AIRFOIL_KEY) {
+        p_airfoil = new PritchardAirfoil(default_pritchard_params);
+        Session.set(AIRFOIL_NAME_KEY, 'Default Airfoil');
+        Session.set(IS_PRIVATE_KEY, false);
+        Session.set(AIRFOIL_CREATOR, 'admin');
+    } else {
+        var temp_airfoil = Airfoils.findOne({_id: airfoil_id});
+        if (temp_airfoil){
+            p_airfoil = new PritchardAirfoil(temp_airfoil.parameters);
+            Session.set(AIRFOIL_NAME_KEY, temp_airfoil.name);
+            Session.set(IS_PRIVATE_KEY, temp_airfoil.private);
+            Session.set(AIRFOIL_CREATOR, temp_airfoil.creator);
+        }
+    }
 
-    // Draw control points.
-    draw_control();
+    if (Session.get(CURRENT_PAGE_KEY) == DESIGN_PAGE_KEY) {
+        console.log('Rendered and going!');
+        render_svg();
+        populate_airfoil_params();
+        draw_airfoil();
+    }
+
+    console.log(Session.get(AIRFOIL_NAME_KEY));
+    console.log(Session.get(IS_PRIVATE_KEY));
+    console.log(Session.get(AIRFOIL_CREATOR));
 };
 
 function determine_scales(){
@@ -262,62 +374,6 @@ function populate_airfoil_params(){
 
 };
 
-function draw_airfoil_initial() {
-    zoom_group.selectAll('path.le_line')
-        .data([p_airfoil.le_pts])
-        .enter()
-        .append('path')
-        .attr('class','le_line')
-        .attr('d', function(d) {return line(d)})
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1.0)
-        .attr("fill", "none");
-
-    zoom_group.selectAll('path.te_line')
-        .data([p_airfoil.te_pts])
-        .enter()
-        .append('path')
-        .attr('class','te_line')
-        .attr('d', function(d) {return line(d)})
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1.0)
-        .attr("fill", "none");
-
-    zoom_group.selectAll('path.ss_line')
-        .data([p_airfoil.ss_pts])
-        .enter()
-        .append('path')
-        .attr('class','ss_line')
-        .attr('d', function(d) {return line(d)})
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1.0)
-        .attr("fill", "none");
-
-    zoom_group.selectAll('path.ps_line')
-        .data([p_airfoil.ps_pts])
-        .enter()
-        .append('path')
-        .attr('class','ps_line')
-        .attr('d', function(d) {return line(d)})
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1.0)
-        .attr("fill", "none");
-
-    zoom_group.selectAll('path.thrt_line')
-        .data([p_airfoil.thrt_pts])
-        .enter()
-        .append('path')
-        .attr('class','thrt_line')
-        .attr('d', function(d) {return line(d)})
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1.0)
-        .attr("fill", "none");
-
-    if (Session.get(DUPLICATE_KEY)) {
-        draw_duplicate_airfoil();
-    }
-};
-
 function draw_duplicate_airfoil() {
     zoom_group.selectAll('path.duplicate_line')
         .data([p_airfoil.le_pts, p_airfoil.te_pts, p_airfoil.ss_pts, p_airfoil.ps_pts, p_airfoil.thrt_pts])
@@ -331,7 +387,7 @@ function draw_duplicate_airfoil() {
         .attr("fill", "none");
 };
 
-function redraw_airfoil(){
+function draw_airfoil(){
     redraw_le();
     redraw_te();
     redraw_ss();
@@ -365,31 +421,66 @@ function draw_refpoints(){
 function redraw_le(){
     zoom_group.selectAll('path.le_line')
         .data([p_airfoil.le_pts])
-        .attr('d', function(d) {return line(d)});
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('class','le_line')
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
 };
 
 function redraw_te(){
     zoom_group.selectAll('path.te_line')
         .data([p_airfoil.te_pts])
-        .attr('d', function(d) {return line(d)});
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('class','te_line')
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
 };
 
 function redraw_ss(){
     zoom_group.selectAll('path.ss_line')
         .data([p_airfoil.ss_pts])
-        .attr('d', function(d) {return line(d)});
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('class','ss_line')
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
 };
 
 function redraw_thrt(){
     zoom_group.selectAll('path.thrt_line')
         .data([p_airfoil.thrt_pts])
-        .attr('d', function(d) {return line(d)});
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('class','thrt_line')
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
 };
 
 function redraw_ps(){
     zoom_group.selectAll('path.ps_line')
         .data([p_airfoil.ps_pts])
-        .attr('d', function(d) {return line(d)});
+        .attr('d', function(d) {return line(d)})
+        .enter()
+        .append('path')
+        .attr('class','ps_line')
+        .attr('d', function(d) {return line(d)})
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1.0)
+        .attr("fill", "none");
 };
 
 function draw_control(){
@@ -431,7 +522,7 @@ function draw_cx_control(){
                 //     .attr('d', function(d) {return line(d)});
 
 
-                redraw_airfoil();
+                draw_airfoil();
                 populate_airfoil_params();
             }
         });
@@ -492,7 +583,7 @@ function draw_ct_control(){
                 //     .data([[{x: p_airfoil.rle, y: 0}, {x: p_airfoil.rle, y: p_airfoil.ct}]])
                 //     .attr('d', function(d) {return line(d)});
 
-                redraw_airfoil();
+                draw_airfoil();
                 populate_airfoil_params();
             }
         })
@@ -562,7 +653,7 @@ function draw_thrt_control(){
                     ]])
                     .attr('d', function(d) {return line(d)});
 
-                redraw_airfoil();
+                draw_airfoil();
                 populate_airfoil_params();
             }
         });
@@ -633,7 +724,7 @@ function draw_b1_control(){
                 ]])
                 .attr('d', function(d) {return line(d)});
 
-            redraw_airfoil();
+            draw_airfoil();
             populate_airfoil_params();
         });
 
@@ -704,7 +795,7 @@ function draw_b2_control(){
                 ]])
                 .attr('d', function(d) {return line(d)});
 
-            redraw_airfoil();
+            draw_airfoil();
             populate_airfoil_params();
         });
 

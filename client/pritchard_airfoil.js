@@ -287,6 +287,22 @@ PritchardAirfoil.prototype.toString = function() {
     return msg;
 };
 
+PritchardAirfoil.prototype.get_params = function(){
+    return {
+        r: this.r,
+        cx: this.cx,
+        ct: this.ct,
+        uct: this.uct,
+        b1: this.b1,
+        db1: this.db1,
+        rle: this.rle,
+        b2: this.b2,
+        rte: this.rte,
+        nb: this.nb,
+        o: this.o
+    }
+};
+
 // Other Helper Functions
 var cubic_points_from_endpoints = function(num_points, pt1, pt2){
     var d = (Math.tan(pt1.b) + Math.tan(pt2.b))/Math.pow(pt1.x - pt2.x, 2) -
