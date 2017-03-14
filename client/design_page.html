@@ -10,7 +10,7 @@
     <div class="container">
         {{> design_toolbar}}
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3 parameter_sidebar">
                 {{> parameter_sidebar}}
             </div>
 
@@ -22,6 +22,10 @@
             {{> instructions}}
         </div>
     </div>
+
+    {{#if tutorialEnabled}}
+        {{> tutorial options}}
+    {{/if}}
 </template>
 
 <template name="parameter_sidebar">
@@ -72,7 +76,7 @@
 
 <template name="design_toolbar">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 airfoil_name_div">
             <span class="h3"> {{name}} </span>
             {{#if canEdit}}
                 <button class="btn btn-default" data-toggle="modal" data-target="#editNameModal"><span class="glyphicon glyphicon-pencil"></span></button>

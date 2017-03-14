@@ -192,7 +192,7 @@ Template.design_toolbar.events({
     'click .js-update-privacy' (event, instance){
         Session.set(IS_PRIVATE_KEY, !Session.get(IS_PRIVATE_KEY));
     }
-})
+});
 
 Tracker.autorun(function() {
     // console.log('TRACKER TRIGGERED', Session.get(AIRFOIL_KEY) );
@@ -303,7 +303,7 @@ function update_airfoil_id() {
     console.log(Session.get(AIRFOIL_NAME_KEY));
     console.log(Session.get(IS_PRIVATE_KEY));
     console.log(Session.get(AIRFOIL_CREATOR));
-};
+}
 
 function determine_scales(){
     // Determine max and mins
@@ -349,11 +349,11 @@ function determine_scales(){
     // y_scale = d3.scale.linear()
     //     .domain(p_airfoil.get_extents())
     //     .range([svg_height, 0]);
-};
+}
 
 function point_at_angle_dist(pt, ang, dist){
     return {x: pt.x + dist*Math.cos(ang), y: pt.y + dist*Math.sin(ang)};
-};
+}
 
 function round(value, decimals) {
     return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
@@ -372,7 +372,7 @@ function populate_airfoil_params(){
     $('#nb_input').val(p_airfoil.nb);
     $('#o_input').val(round(p_airfoil.o, 4));
 
-};
+}
 
 function draw_duplicate_airfoil() {
     zoom_group.selectAll('path.duplicate_line')
@@ -385,7 +385,7 @@ function draw_duplicate_airfoil() {
         .attr("stroke", "#0066ff")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function draw_airfoil(){
     redraw_le();
@@ -401,7 +401,7 @@ function draw_airfoil(){
     }
 
     draw_control();
-};
+}
 
 function draw_refpoints(){
     zoom_group.selectAll('circle.ref_points')
@@ -416,7 +416,7 @@ function draw_refpoints(){
         .attr('cx', function(d) {return x_scale(d.x)})
         .attr('cy', function(d) {return y_scale(d.y)})
         .attr('fill', 'blue');
-};
+}
 
 function redraw_le(){
     zoom_group.selectAll('path.le_line')
@@ -429,7 +429,7 @@ function redraw_le(){
         .attr("stroke", "blue")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function redraw_te(){
     zoom_group.selectAll('path.te_line')
@@ -442,7 +442,7 @@ function redraw_te(){
         .attr("stroke", "blue")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function redraw_ss(){
     zoom_group.selectAll('path.ss_line')
@@ -455,7 +455,7 @@ function redraw_ss(){
         .attr("stroke", "blue")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function redraw_thrt(){
     zoom_group.selectAll('path.thrt_line')
@@ -468,7 +468,7 @@ function redraw_thrt(){
         .attr("stroke", "blue")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function redraw_ps(){
     zoom_group.selectAll('path.ps_line')
@@ -481,7 +481,7 @@ function redraw_ps(){
         .attr("stroke", "blue")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function draw_control(){
     draw_thrt_control();
@@ -551,7 +551,7 @@ function draw_cx_control(){
     //     .attr("stroke", "red")
     //     .attr("stroke-width", 1.0)
     //     .attr("fill", "none");
-};
+}
 
 function draw_ct_control(){
     var drag_point = d3.behavior.drag()
@@ -612,7 +612,7 @@ function draw_ct_control(){
     //     .attr("stroke", "red")
     //     .attr("stroke-width", 1.0)
     //     .attr("fill", "none");
-};
+}
 
 function draw_thrt_control(){
     var drag_point = d3.behavior.drag()
@@ -685,7 +685,7 @@ function draw_thrt_control(){
         .attr("stroke", "red")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function draw_b1_control(){
     var drag_point = d3.behavior.drag()
@@ -756,7 +756,7 @@ function draw_b1_control(){
         .attr("stroke", "red")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
 
 function draw_b2_control(){
     var drag_point = d3.behavior.drag()
@@ -827,4 +827,109 @@ function draw_b2_control(){
         .attr("stroke", "red")
         .attr("stroke-width", 1.0)
         .attr("fill", "none");
-};
+}
+
+
+// TUTORIAL INFORMATION
+tutorialSteps = [
+    {
+        template: Template.tutorial_step1,
+        spot: '.airfoil_name_div',
+        onLoad: function() { console.log("The tutorial has started!"); }
+    },
+    {
+        template: Template.tutorial_step2,
+        spot: '.js-save-airfoil',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step3,
+        spot: '.js-update-privacy',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step4,
+        spot: '.parameter_sidebar',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step5,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step6,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step7,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step8,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step9,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step10,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step11,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step12,
+        spot: '#airfoil_section',
+        onLoad: function() {
+            return;
+        }
+    }
+];
+
+Template.design_page.helpers({
+    tutorialEnabled: function() {
+        return Session.get('tutorialEnabled');
+    },
+    options: {
+        id: "designPageTutorial",
+        steps: tutorialSteps,
+        emitter: new EventEmitter(),
+        onFinish: function() {
+            console.log("Finished Tutorial!");
+            Meteor.setTimeout( function () {
+                // Test debouncing
+                Session.set('tutorialEnabled', false);
+            }, 1000);
+        }
+    }
+});
