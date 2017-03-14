@@ -869,6 +869,7 @@ tutorialSteps = [
         template: Template.tutorial_step6,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Airfoil Breaks
             return;
         }
     },
@@ -876,6 +877,7 @@ tutorialSteps = [
         template: Template.tutorial_step7,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Axial Chord
             return;
         }
     },
@@ -883,6 +885,7 @@ tutorialSteps = [
         template: Template.tutorial_step8,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Tangential Chord
             return;
         }
     },
@@ -890,6 +893,7 @@ tutorialSteps = [
         template: Template.tutorial_step9,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Throat
             return;
         }
     },
@@ -897,6 +901,7 @@ tutorialSteps = [
         template: Template.tutorial_step10,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Inlet Angle
             return;
         }
     },
@@ -904,6 +909,7 @@ tutorialSteps = [
         template: Template.tutorial_step11,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Exit Angle
             return;
         }
     },
@@ -911,10 +917,34 @@ tutorialSteps = [
         template: Template.tutorial_step12,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Done.
             return;
         }
     }
 ];
+
+function drawTutorialRect(x, y, width, height){
+    var rects = zoom_group.selectAll('rect.tutorial_rect')
+        .data({x: x, y: y, width: width, height: height});
+
+    rects.enter()
+        .append('rect')
+        .attr('x', function(d) {return d.x;})
+        .attr('y', function(d) {return d.y;})
+        .attr('width', function(d) {return d.width})
+        .attr('height', function(d) {return d.height})
+        .attr('stroke', 'red')
+        .attr('stroke-width', 2.0)
+        .attr('class', 'tutorial_rect');
+
+    rects.attr('x', function(d) {return d.x;})
+        .attr('y', function(d) {return d.y;})
+        .attr('width', function(d) {return d.width})
+        .attr('height', function(d) {return d.height});
+
+    rects.exit()
+        .remove();
+}
 
 Template.design_page.helpers({
     tutorialEnabled: function() {
