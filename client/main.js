@@ -23,6 +23,7 @@ var current_scale = 1.0;
 var current_translate = [0, 0];
 var x_constraints;
 var y_constraints;
+var temp_value;
 
 Template.design_page.events({
     'change #r_input'(event, instance){
@@ -142,6 +143,20 @@ Template.design_toolbar.helpers({
 
         return false;
     },
+    canDelete: function() {
+        // If the user isn't logged in. They can't edit anything
+        if (!Meteor.user()){
+            console.log('Not logged in.');
+            return false;
+        }
+
+        // It's not the default airfoil. They can only edit if they own it.
+        if (Session.get(AIRFOIL_CREATOR) == Meteor.userId()){
+            return true;
+        }
+
+        return false;
+    },
     privateText: function() {
         if (Session.get(IS_PRIVATE_KEY)){
             return "Private";
@@ -191,6 +206,43 @@ Template.design_toolbar.events({
     },
     'click .js-update-privacy' (event, instance){
         Session.set(IS_PRIVATE_KEY, !Session.get(IS_PRIVATE_KEY));
+    },
+    'click .js-start-tutorial' (event, instance){
+        if (Session.get(TUTORIAL_ENABLED) == true){
+            // Session is already triggered. Do Nothing
+            return;
+        }
+        Session.set(TUTORIAL_ENABLED, true);
+    },
+    'click .js-copy-name-submit' (event, instance){
+        var new_name = $('#copy_name_edit').val();
+        Session.set(AIRFOIL_NAME_KEY, new_name);
+        var airfoil_obj = {
+            name: Session.get(AIRFOIL_NAME_KEY),
+            private: Session.get(IS_PRIVATE_KEY),
+            creator: Meteor.userId(),
+            parameters: p_airfoil.get_params()
+        };
+        console.log('Adding new airfoil to the DB for the current user.');
+        Meteor.call('addAirfoil', airfoil_obj, function(err, result){
+            console.log(result);
+            if (result){
+                // We have a valid airfoil. Update session variable.
+                Session.set(AIRFOIL_KEY, result);
+            }
+        });
+    },
+    'click .js-delete-airfoil' (event, instance){
+        var current_key = Session.get(AIRFOIL_KEY)
+        Session.set(AIRFOIL_KEY, DEFAULT_AIRFOIL_KEY);
+        Meteor.call('removeAirfoil', current_key, function(err, result){
+            console.log(result);
+            if (result){
+                // // We have a valid airfoil. Update session variable.
+                // Session.set(AIRFOIL_KEY, DEFAULT_AIRFOIL_KEY);
+                return;
+            }
+        });
     }
 });
 
@@ -539,18 +591,6 @@ function draw_cx_control(){
         .attr('fill', 'red')
         .attr('class', 'cx_cntrl')
         .call(drag_point);
-
-    // zoom_group.selectAll('path.cx_cntrl')
-    //     .data([[{x: 0, y: 0}, {x: p_airfoil.cx - p_airfoil.rte, y: 0}]])
-    //     .attr('d', function(d) {return line(d)})
-    //     .enter()
-    //     .append('path')
-    //     .attr('d', function(d) {return line(d)})
-    //     .attr('fill', 'red')
-    //     .attr('class', 'cx_cntrl')
-    //     .attr("stroke", "red")
-    //     .attr("stroke-width", 1.0)
-    //     .attr("fill", "none");
 }
 
 function draw_ct_control(){
@@ -600,18 +640,6 @@ function draw_ct_control(){
         .attr('fill', 'red')
         .attr('class', 'ct_cntrl')
         .call(drag_point);
-
-    // zoom_group.selectAll('path.ct_cntrl')
-    //     .data([[{x: p_airfoil.rle, y: 0}, {x: p_airfoil.rle, y: p_airfoil.ct}]])
-    //     .attr('d', function(d) {return line(d)})
-    //     .enter()
-    //     .append('path')
-    //     .attr('d', function(d) {return line(d)})
-    //     .attr('fill', 'red')
-    //     .attr('class', 'ct_cntrl')
-    //     .attr("stroke", "red")
-    //     .attr("stroke-width", 1.0)
-    //     .attr("fill", "none");
 }
 
 function draw_thrt_control(){
@@ -835,7 +863,10 @@ tutorialSteps = [
     {
         template: Template.tutorial_step1,
         spot: '.airfoil_name_div',
-        onLoad: function() { console.log("The tutorial has started!"); }
+        onLoad: function() {
+            console.log("The tutorial has started!");
+            render_svg();  // Reset airfoil position.
+        }
     },
     {
         template: Template.tutorial_step2,
@@ -862,6 +893,12 @@ tutorialSteps = [
         template: Template.tutorial_step5,
         spot: '#airfoil_section',
         onLoad: function() {
+            // FIx airfoil in case we went back from the last step.
+            if (temp_value){
+                p_airfoil.o = temp_value;
+                p_airfoil.calc_airfoil();
+                draw_airfoil();
+            }
             return;
         }
     },
@@ -870,6 +907,17 @@ tutorialSteps = [
         spot: '#airfoil_section',
         onLoad: function() {
             // Airfoil Breaks
+            var x, y, x1, y1, x2, y2, width, height;
+            x = -100;
+            y = 100;
+            width = 3;
+            height = 3;
+            drawTutorialRect(x, y, width, height);
+
+            temp_value = p_airfoil.o;
+            p_airfoil.o = temp_value*0.25;
+            p_airfoil.calc_airfoil();
+            draw_airfoil();
             return;
         }
     },
@@ -877,7 +925,25 @@ tutorialSteps = [
         template: Template.tutorial_step7,
         spot: '#airfoil_section',
         onLoad: function() {
+            // Fix our previous step.
+            if (temp_value){
+                p_airfoil.o = temp_value;
+                p_airfoil.calc_airfoil();
+                draw_airfoil();
+            }
+
             // Axial Chord
+            var x, y, x1, y1, x2, y2, width, height;
+            x = p_airfoil.cx - p_airfoil.rte;
+            y = 0;
+            r = 1.5*p_airfoil.rte;
+            x1 = x_scale(x - r);
+            x2 = x_scale(x + r);
+            y1 = y_scale(y - r);
+            y2 = y_scale(y + r);
+            width = x2 - x1;
+            height = y1 - y2;
+            drawTutorialRect(x1, y2, width, height);
             return;
         }
     },
@@ -886,6 +952,17 @@ tutorialSteps = [
         spot: '#airfoil_section',
         onLoad: function() {
             // Tangential Chord
+            var x, y, x1, y1, x2, y2, width, height;
+            x = p_airfoil.rle;
+            y = p_airfoil.ct;
+            r = 1.5*p_airfoil.rle;
+            x1 = x_scale(x - r);
+            x2 = x_scale(x + r);
+            y1 = y_scale(y - r);
+            y2 = y_scale(y + r);
+            width = x2 - x1;
+            height = y1 - y2;
+            drawTutorialRect(x1, y2, width, height);
             return;
         }
     },
@@ -894,6 +971,17 @@ tutorialSteps = [
         spot: '#airfoil_section',
         onLoad: function() {
             // Throat
+            var x, y, x1, y1, x2, y2, width, height;
+            x = p_airfoil.pt2.x;
+            y = p_airfoil.pt2.y;
+            r = 1.5*p_airfoil.rle;
+            x1 = x_scale(x - r);
+            x2 = x_scale(x + r);
+            y1 = y_scale(y - r);
+            y2 = y_scale(y + r);
+            width = x2 - x1;
+            height = y1 - y2;
+            drawTutorialRect(x1, y2, width, height);
             return;
         }
     },
@@ -902,6 +990,19 @@ tutorialSteps = [
         spot: '#airfoil_section',
         onLoad: function() {
             // Inlet Angle
+            var circ_cntr = {x: p_airfoil.rle, y: p_airfoil.ct};
+            var cntrl_pt = point_at_angle_dist(circ_cntr, p_airfoil.b1 + Math.PI, 4*p_airfoil.rle);
+            var x, y, x1, y1, x2, y2, width, height;
+            x = cntrl_pt.x;
+            y = cntrl_pt.y;
+            r = 1.5*p_airfoil.rle;
+            x1 = x_scale(x - r);
+            x2 = x_scale(x + r);
+            y1 = y_scale(y - r);
+            y2 = y_scale(y + r);
+            width = x2 - x1;
+            height = y1 - y2;
+            drawTutorialRect(x1, y2, width, height);
             return;
         }
     },
@@ -910,6 +1011,19 @@ tutorialSteps = [
         spot: '#airfoil_section',
         onLoad: function() {
             // Exit Angle
+            var circ_cntr = {x: p_airfoil.cx - p_airfoil.rte, y: 0};
+            var cntrl_pt = point_at_angle_dist(circ_cntr, p_airfoil.b2, 5*p_airfoil.rte);
+            var x, y, x1, y1, x2, y2, width, height;
+            x = cntrl_pt.x;
+            y = cntrl_pt.y;
+            r = 1.5*p_airfoil.rte;
+            x1 = x_scale(x - r);
+            x2 = x_scale(x + r);
+            y1 = y_scale(y - r);
+            y2 = y_scale(y + r);
+            width = x2 - x1;
+            height = y1 - y2;
+            drawTutorialRect(x1, y2, width, height);
             return;
         }
     },
@@ -918,6 +1032,7 @@ tutorialSteps = [
         spot: '#airfoil_section',
         onLoad: function() {
             // Done.
+            removeTutorialRect();
             return;
         }
     }
@@ -925,41 +1040,72 @@ tutorialSteps = [
 
 function drawTutorialRect(x, y, width, height){
     var rects = zoom_group.selectAll('rect.tutorial_rect')
-        .data({x: x, y: y, width: width, height: height});
+        .data([{x: x, y: y, width: width, height: height}]);
 
     rects.enter()
         .append('rect')
+        .attr('stroke', 'red')
+        .attr('fill', 'none')
+        .attr('stroke-width', 2.0)
+        .attr('class', 'tutorial_rect')
+        .transition()
+        .duration(250)
+        .ease('linear')
         .attr('x', function(d) {return d.x;})
         .attr('y', function(d) {return d.y;})
         .attr('width', function(d) {return d.width})
-        .attr('height', function(d) {return d.height})
-        .attr('stroke', 'red')
-        .attr('stroke-width', 2.0)
-        .attr('class', 'tutorial_rect');
+        .attr('height', function(d) {return d.height});
 
-    rects.attr('x', function(d) {return d.x;})
+
+    rects.transition()
+        .duration(250)
+        .ease('linear')
+        .attr('x', function(d) {return d.x;})
         .attr('y', function(d) {return d.y;})
         .attr('width', function(d) {return d.width})
         .attr('height', function(d) {return d.height});
 
     rects.exit()
+        .transition()
+        .duration(250)
+        .ease('linear')
+        .remove();
+}
+
+function removeTutorialRect(x, y, width, height){
+    var rects = zoom_group.selectAll('rect.tutorial_rect')
+        .data([]);
+
+    rects.exit()
+        .transition()
+        .duration(250)
+        .ease('linear')
         .remove();
 }
 
 Template.design_page.helpers({
     tutorialEnabled: function() {
-        return Session.get('tutorialEnabled');
+        if (Session.get(CURRENT_PAGE_KEY) != DESIGN_PAGE_KEY){
+            Session.set(TUTORIAL_ENABLED, false);
+        }
+        return Session.get(TUTORIAL_ENABLED);
     },
     options: {
-        id: "designPageTutorial",
+        //id: "designPageTutorial",
         steps: tutorialSteps,
         emitter: new EventEmitter(),
         onFinish: function() {
             console.log("Finished Tutorial!");
+            if (temp_value){
+                p_airfoil.o = temp_value;
+                p_airfoil.calc_airfoil();
+                draw_airfoil();
+            }
+            removeTutorialRect();
             Meteor.setTimeout( function () {
                 // Test debouncing
-                Session.set('tutorialEnabled', false);
-            }, 1000);
+                Session.set(TUTORIAL_ENABLED, false);
+            }, 250);
         }
     }
 });

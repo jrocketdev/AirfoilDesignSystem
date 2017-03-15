@@ -80,7 +80,12 @@
             <span class="h3"> {{name}} </span>
             {{#if canEdit}}
                 <button class="btn btn-default" data-toggle="modal" data-target="#editNameModal"><span class="glyphicon glyphicon-pencil"></span></button>
+            {{else}}
+                {{#if currentUser}}
+                    <button type="button" class="btn btn-default js-make-copy" data-toggle="modal" data-target="#makeCopyModal">Make Copy</button>
+                {{/if}}
             {{/if}}
+            <button type="button" class="btn btn-primary pull-right js-start-tutorial">Tutorial!</button>
         </div>
         {{#if canEdit}}
             <div class="col-md-12">
@@ -91,6 +96,11 @@
                     <div class="btn-group" role="group" aria-label="...">
                         <button class="btn btn-default js-update-privacy">{{privateText}}</button>
                     </div>
+                    {{#if canDelete}}
+                        <div class="btn-group" role="group" aria-label="...">
+                            <button class="btn btn-default" data-toggle="modal" data-target="#deleteAirfoilModal"><span class="glyphicon glyphicon-trash"></span></button>
+                        </div>
+                    {{/if}}
                 </div>
             </div>
         {{/if}}
@@ -112,6 +122,45 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default js-edit-name" data-dismiss="modal">Submit</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="makeCopyModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">What should our new name be?</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="basic-addon1">Name</span>
+                        <input type="text" class="form-control" id="copy_name_edit" value={{name}} aria-describedby="basic-addon1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default js-copy-name-submit" data-dismiss="modal">Submit</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="deleteAirfoilModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Are you sure?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Do you really want to delete the airfoil?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default js-delete-airfoil" data-dismiss="modal">Yes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
