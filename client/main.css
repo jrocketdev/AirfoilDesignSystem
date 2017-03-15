@@ -1,1 +1,9 @@
 /* CSS declarations go here */
+.parameter_sidebar {
+    outline: 1px solid black;
+    padding: 5px;
+}
+
+.airfoil_svg_section {
+    padding: 5px;
+}

@@ -9,17 +9,15 @@
 <template name="design_page">
     <div class="container">
         {{> design_toolbar}}
+        <br>
         <div class="row">
             <div class="col-md-3 parameter_sidebar">
                 {{> parameter_sidebar}}
             </div>
 
-            <div class="col-md-9">
+            <div class="col-md-9 airfoil_svg_section">
                 {{> airfoil_svg_section}}
             </div>
-        </div>
-        <div class="row">
-            {{> instructions}}
         </div>
     </div>
 
@@ -29,28 +27,51 @@
 </template>
 
 <template name="parameter_sidebar">
-    <label class="">Radius (R)</label><br>
-    <input id="r_input" type="number" class="" placeholder="" step=0.1><br>
-    <label class="">Axial Chord (Cx)</label><br>
-    <input id="cx_input" type="number" class="" placeholder="" step=0.01><br>
-    <label class="">Tangential Chord (Ct)</label><br>
-    <input id="ct_input" type="number" class="" placeholder="" step=0.01><br>
-    <label class="">Uncovered Turning (UCT)</label><br>
-    <input id="uct_input" type="number" class="" placeholder="" step=0.1><br>
-    <label class="">Inlet Angle (B1)</label><br>
-    <input id="b1_input" type="number" class="" placeholder="" step=0.1><br>
-    <label class="">Inlet Wedge Angle (dB1)</label><br>
-    <input id="db1_input" type="number" class="" placeholder="" step=0.1><br>
-    <label class="">Leading Edge Radius (RLE)</label><br>
-    <input id="rle_input" type="number" class="" placeholder="" step=0.001><br>
-    <label class="">Outlet Angle (B2)</label><br>
-    <input id="b2_input" type="number" class="" placeholder="" step=0.1><br>
-    <label class="">Trailing Edge Radius (RTE)</label><br>
-    <input id="rte_input" type="number" class="" placeholder="" step=0.001><br>
-    <label class="">Airfoil Count (NB)</label><br>
-    <input id="nb_input" type="number" class="" placeholder="" step=1><br>
-    <label class="">Throat (O)</label><br>
-    <input id="o_input" type="number" class="" placeholder="" step=0.01><br>
+    <h4>Airfoil Parameters</h4>
+    <div class="input-group input-group-sm">
+        <label for="r_input" class="">Radius (R)</label>
+        <input id="r_input" type="number" class="form-control" placeholder="" step=0.1>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="cx_input" class="">Axial Chord (Cx)</label>
+        <input id="cx_input" type="number" class="form-control" placeholder="" step=0.01>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="ct_input" class="">Tangential Chord (Ct)</label>
+        <input id="ct_input" type="number" class="form-control" placeholder="" step=0.01>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="uct_input" class="">Uncovered Turning (UCT)</label>
+        <input id="uct_input" type="number" class="form-control" placeholder="" step=0.1>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="b1_input" class="">Inlet Angle (B1)</label>
+        <input id="b1_input" type="number" class="form-control" placeholder="" step=0.1>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="db1_input" class="">Inlet Wedge Angle (dB1)</label>
+        <input id="db1_input" type="number" class="form-control" placeholder="" step=0.1>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="rle_input" class="">Leading Edge Radius (RLE)</label>
+        <input id="rle_input" type="number" class="form-control" placeholder="" step=0.001>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="b2_input" class="">Outlet Angle (B2)</label>
+        <input id="b2_input" type="number" class="form-control" placeholder="" step=0.1>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="rte_input" class="">Trailing Edge Radius (RTE)</label>
+        <input id="rte_input" type="number" class="form-control" placeholder="" step=0.001>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="nb_input" class="">Airfoil Count (NB)</label>
+        <input id="nb_input" type="number" class="form-control" placeholder="" step=1>
+    </div>
+    <div class="input-group input-group-sm">
+        <label for="o_input" class="">Throat (O)</label>
+        <input id="o_input" type="number" class="form-control" placeholder="" step=0.01>
+    </div>
 </template>
 
 <template name="airfoil_svg_section">

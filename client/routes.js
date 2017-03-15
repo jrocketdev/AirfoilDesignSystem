@@ -20,7 +20,7 @@ Router.route('/design/:_id', function () {
     } else {
         var temp_airfoil = Airfoils.findOne({_id: airfoil_id});
         if (!temp_airfoil){
-            console.log('Unable to find airfoil. There was a problem with the ID.')
+            console.log('Unable to find airfoil. There was a problem with the ID.');
             return;
         }
         Session.set('airfoil_id', airfoil_id);

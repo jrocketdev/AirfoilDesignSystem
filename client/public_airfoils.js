@@ -79,7 +79,7 @@ function update_airfoil(airfoil_obj){
 
     var svg_obj = d3.select('svg#Airfoil_' + airfoil_obj._id);
     if (!svg_obj){
-        return
+        return;
     }
 
     var p_airfoil = new PritchardAirfoil(airfoil_obj.parameters);

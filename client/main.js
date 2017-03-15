@@ -229,6 +229,7 @@ Template.design_toolbar.events({
             if (result){
                 // We have a valid airfoil. Update session variable.
                 Session.set(AIRFOIL_KEY, result);
+                Router.go('/design/' + result);
             }
         });
     },
@@ -240,9 +241,11 @@ Template.design_toolbar.events({
             if (result){
                 // // We have a valid airfoil. Update session variable.
                 // Session.set(AIRFOIL_KEY, DEFAULT_AIRFOIL_KEY);
+                Router.go('/design/default');
                 return;
             }
         });
+        return;
     }
 });
 
@@ -1054,7 +1057,8 @@ function drawTutorialRect(x, y, width, height){
         .attr('x', function(d) {return d.x;})
         .attr('y', function(d) {return d.y;})
         .attr('width', function(d) {return d.width})
-        .attr('height', function(d) {return d.height});
+        .attr('height', function(d) {return d.height})
+        .each(pulse);
 
 
     rects.transition()
@@ -1063,13 +1067,33 @@ function drawTutorialRect(x, y, width, height){
         .attr('x', function(d) {return d.x;})
         .attr('y', function(d) {return d.y;})
         .attr('width', function(d) {return d.width})
-        .attr('height', function(d) {return d.height});
+        .attr('height', function(d) {return d.height})
+        .each(pulse);
 
     rects.exit()
         .transition()
         .duration(250)
         .ease('linear')
         .remove();
+
+    function pulse() {
+        (function repeat() {
+            var circle = svg.select("rect.tutorial_rect");
+            if (!circle){
+                return;
+            }
+            circle = circle.transition()
+                .duration(1000)
+                .attr('stroke', 'red')
+                .attr("stroke-width", 1.0)
+                .transition()
+                .duration(1000)
+                .attr('stroke', 'red')
+                .attr('stroke-width', 3.0)
+                .ease('sine')
+                .each("end", repeat);
+        })();
+    }
 }
 
 function removeTutorialRect(x, y, width, height){
