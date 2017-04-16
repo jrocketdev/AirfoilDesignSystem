@@ -163,6 +163,9 @@ Template.design_toolbar.helpers({
         } else {
             return "Public";
         }
+    },
+    airfoil_points: function() {
+        return Session.get(AIRFOIL_POINTS);
     }
 });
 
@@ -246,6 +249,16 @@ Template.design_toolbar.events({
             }
         });
         return;
+    },
+    'click .js-export-points' (event, instance){
+        // When the button is clicked reset the session var for the points text
+        var txt = "";
+        var radius = p_airfoil.r;
+        p_airfoil.get_points().forEach(function(pt){
+            txt += pt.x + ", " + pt.y + ", " + radius + "\n";
+            // console.log(pt.x, pt.y);
+        });
+        Session.set(AIRFOIL_POINTS, txt);
     }
 });
 
@@ -881,6 +894,13 @@ tutorialSteps = [
     {
         template: Template.tutorial_step3,
         spot: '.js-update-privacy',
+        onLoad: function() {
+            return;
+        }
+    },
+    {
+        template: Template.tutorial_step3_5,
+        spot: '.js-export-points',
         onLoad: function() {
             return;
         }

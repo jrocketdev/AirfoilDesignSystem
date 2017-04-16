@@ -303,6 +303,40 @@ PritchardAirfoil.prototype.get_params = function(){
     }
 };
 
+PritchardAirfoil.prototype.get_points = function(){
+    var pt_arrs = [this.le_pts, this.ss_pts, this.thrt_pts, this.te_pts, this.ps_pts];
+
+    var all_pts = [];
+    var current_length = 0;
+
+    // Add LE points in reverse
+    all_pts = this.le_pts.slice().reverse();
+
+    // Add SS points
+    all_pts = all_pts.concat(this.ss_pts);
+
+    // Add THRT points in reverse
+    all_pts = all_pts.concat(this.thrt_pts.slice().reverse());
+
+    // Add TE points in order
+    all_pts = all_pts.concat(this.te_pts);
+
+    // Add PS points in reverse
+    all_pts = all_pts.concat(this.ps_pts.slice().reverse());
+
+    // Check for duplicate points
+    var i = 1;
+    while (i < all_pts.length){
+        if (dist(all_pts[i-1], all_pts[i]) < 1e-6) {
+            all_pts.splice(i, 1);
+        } else {
+            i++;
+        }
+    }
+
+    return all_pts;
+};
+
 // Other Helper Functions
 var cubic_points_from_endpoints = function(num_points, pt1, pt2){
     var d = (Math.tan(pt1.b) + Math.tan(pt2.b))/Math.pow(pt1.x - pt2.x, 2) -
@@ -403,6 +437,11 @@ var rawNewton = function(guess, f, leftBound, rightBound, dx, minXdist, minYdist
 //a wrapper for list of defaults
 var newton = function(g, f, lb, rb) {
     return rawNewton.call(this, g, f, lb, rb, 1e-10, 1e-10, 1e-10, 10);
+};
+
+// Compute distance between two points with .x and .y attributes.
+var dist = function(pt1, pt2){
+    return Math.sqrt(Math.pow(pt1.x-pt2.x, 2) + Math.pow(pt1.y-pt2.y, 2));
 };
 
 export { PritchardAirfoil, default_pritchard_params };

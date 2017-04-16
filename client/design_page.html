@@ -108,9 +108,10 @@
             {{/if}}
             <button type="button" class="btn btn-primary pull-right js-start-tutorial">Tutorial!</button>
         </div>
-        {{#if canEdit}}
-            <div class="col-md-12">
-                <div class="btn-toolbar" role="toolbar" aria-label="...">
+
+        <div class="col-md-12">
+            <div class="btn-toolbar" role="toolbar" aria-label="...">
+                {{#if canEdit}}
                     <div class="btn-group" role="group" aria-label="...">
                         <button class="btn btn-default js-save-airfoil"><span class="glyphicon glyphicon-save"></span></button>
                     </div>
@@ -122,9 +123,13 @@
                             <button class="btn btn-default" data-toggle="modal" data-target="#deleteAirfoilModal"><span class="glyphicon glyphicon-trash"></span></button>
                         </div>
                     {{/if}}
+                {{/if}}
+                <div class="btn-group" role="group" aria-label="...">
+                    <button class="btn btn-default js-export-points" data-toggle="modal" data-target="#exportAirfoilPoints">Export</button>
                 </div>
             </div>
-        {{/if}}
+        </div>
+
     </div>
     <div class="modal fade" id="editNameModal" role="dialog">
         <div class="modal-dialog">
@@ -182,6 +187,24 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default js-delete-airfoil" data-dismiss="modal">Yes</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="exportAirfoilPoints" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Points</h4>
+                </div>
+                <div class="modal-body">
+                    <h5>Copy & Paste into CSV</h5>
+                    <textarea rows="10" cols="50">{{airfoil_points}}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
