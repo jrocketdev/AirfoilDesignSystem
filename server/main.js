@@ -1,6 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 
 Meteor.startup(() => {
+    //todo: Add in in roles information. Check for admin user and make admin. Make all others "general" or something
+    // https://atmospherejs.com/alanning/roles
+    // I've already installed the required package. Just need to configure it properly.
+
+    // Check to see if we have airfoils. If not, add some tester foils.
     if (!Airfoils.findOne()){// no documents yet!
         Airfoils.insert({
             name: "Tester Airfoil 1",
